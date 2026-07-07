@@ -2,63 +2,36 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monopoly JOR</title>
     <style>
-        /* التنسيق الملكي */
-        body {
-            margin: 0;
-            background: linear-gradient(135deg, #001f3f, #003366);
-            color: #d4af37;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .board-container {
-            width: 90%;
-            max-width: 400px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 2px solid #d4af37;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
-        }
-        h1 { color: #d4af37; text-shadow: 2px 2px 4px #000; }
-        button {
-            background: #d4af37;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            border-radius: 10px;
-            cursor: pointer;
-            color: #001f3f;
-            font-weight: bold;
-            transition: transform 0.2s;
-            margin-top: 15px;
-        }
-        button:active { transform: scale(0.95); }
-        .footer { margin-top: 25px; font-size: 14px; opacity: 0.8; font-style: italic; }
+        body { margin: 0; background: linear-gradient(135deg, #001f3f, #003366); color: #d4af37; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .board-container { width: 90%; max-width: 400px; background: rgba(255, 255, 255, 0.1); border: 2px solid #d4af37; border-radius: 20px; padding: 20px; text-align: center; }
+        h1 { color: #d4af37; }
+        .stats { font-size: 20px; margin: 20px 0; font-weight: bold; }
+        button { padding: 15px 30px; background: #d4af37; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: #001f3f; }
+        .footer { margin-top: 20px; font-size: 12px; opacity: 0.7; }
     </style>
 </head>
 <body>
 
     <div class="board-container">
         <h1>Monopoly JOR</h1>
-        <p>مرحباً بك في عالم العقارات الملكي!</p>
-        <button onclick="rollDice()">ارمي النرد</button>
-        <p id="result">بانتظار رميتك الملكية...</p>
+        <div class="stats">الرصيد: <span id="money">1000</span> دينار</div>
+        <button onclick="playGame()">ارمي النرد</button>
+        <p id="message">جاهز للبدء؟</p>
         <div class="footer">تطوير: ANAS SLEET</div>
     </div>
 
     <script>
-        function rollDice() {
-            const diceValue = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('result').innerText = "لقد حصلت على: " + diceValue;
+        let money = 1000;
+
+        function playGame() {
+            let dice = Math.floor(Math.random() * 6) + 1;
+            // كل رمية نرد تزيد الرصيد بمقدار 50 دينار كمكافأة
+            money += (dice * 50);
+            
+            document.getElementById('money').innerText = money;
+            document.getElementById('message').innerText = "لقد رميت " + dice + " وحصلت على مكافأة!";
         }
     </script>
 </body>
