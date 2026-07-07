@@ -2,36 +2,79 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monopoly JOR</title>
     <style>
-        body { margin: 0; background: linear-gradient(135deg, #001f3f, #003366); color: #d4af37; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        .board-container { width: 90%; max-width: 400px; background: rgba(255, 255, 255, 0.1); border: 2px solid #d4af37; border-radius: 20px; padding: 20px; text-align: center; }
-        h1 { color: #d4af37; }
-        .stats { font-size: 20px; margin: 20px 0; font-weight: bold; }
-        button { padding: 15px 30px; background: #d4af37; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: #001f3f; }
-        .footer { margin-top: 20px; font-size: 12px; opacity: 0.7; }
+        body { margin: 0; background: linear-gradient(135deg, #001f3f, #003366); color: #d4af37; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .board-container { width: 95%; max-width: 500px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 2px solid #d4af37; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        h1 { color: #d4af37; text-shadow: 2px 2px 4px #000; }
+        .stats { font-size: 19px; margin: 12px 0; font-weight: bold; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; }
+        button { padding: 15px 40px; background: #d4af37; border: none; border-radius: 10px; cursor: pointer; color: #001f3f; font-weight: bold; font-size: 18px; transition: transform 0.2s; }
+        button:active { transform: scale(0.95); }
+        .footer { margin-top: 25px; font-size: 13px; opacity: 0.7; font-style: italic; }
     </style>
 </head>
 <body>
 
     <div class="board-container">
         <h1>Monopoly JOR</h1>
-        <div class="stats">الرصيد: <span id="money">1000</span> دينار</div>
-        <button onclick="playGame()">ارمي النرد</button>
-        <p id="message">جاهز للبدء؟</p>
-        <div class="footer">تطوير: ANAS SLEET</div>
+        <div class="stats">الرصيد: <span id="money">1,000,000</span> دينار</div>
+        <div class="stats">النرد المتاح: <span id="diceCount">1000</span></div>
+        <div class="stats">المربع الحالي: <span id="position">0</span></div>
+        <button onclick="movePlayer()">ارمي النرد</button>
+        <p id="message">جاهز للتحرك في رحلة المليون؟</p>
+        <div class="footer">تطوير: Anas Al Salayta</div>
     </div>
 
     <script>
-        let money = 1000;
+        // المتغيرات الأساسية
+        let money = 1000000;
+        let diceCount = 1000;
+        let position = 0;
 
-        function playGame() {
-            let dice = Math.floor(Math.random() * 6) + 1;
-            // كل رمية نرد تزيد الرصيد بمقدار 50 دينار كمكافأة
-            money += (dice * 50);
-            
-            document.getElementById('money').innerText = money;
-            document.getElementById('message').innerText = "لقد رميت " + dice + " وحصلت على مكافأة!";
+        function movePlayer() {
+            if (diceCount > 0) {
+                diceCount--;
+                let dice = Math.floor(Math.random() * 6) + 1;
+                position = (position + dice) % 40; // لوحة من 40 مربع
+                
+                let type = getTileType(position);
+                let message = "تحركت " + dice + " مربعات، وصلت إلى: " + type + ". ";
+
+                // منطق اللعبة حسب نوع المربع
+                if (type === "ضريبة") {
+                    money -= 200;
+                    message += "وقعت في فخ الضريبة! خسرت 200 دينار.";
+                } else if (type === "سكة قطار") {
+                    message += "أرض القطار! قمت بهدم عقار الخصم!";
+                } else if (type === "عقار") {
+                    money += 100;
+                    message += "عقار ممتاز، ربحت 100 دينار إيجار!";
+                } else {
+                    message += "مربع خاص، لا توجد حركة مالية.";
+                }
+
+                // تحديث الواجهة
+                document.getElementById('money').innerText = money.toLocaleString();
+                document.getElementById('diceCount').innerText = diceCount;
+                document.getElementById('position').innerText = position;
+                document.getElementById('message').innerText = message;
+
+            } else {
+                document.getElementById('message').innerText = "نفد النرد لديك! انتظر حتى الغد.";
+            }
+        }
+
+        // توزيع المربعات حسب طلبك (40 مربع)
+        function getTileType(pos) {
+            if (pos === 0) return "الانطلاق";
+            if (pos === 10) return "السجن";
+            if (pos === 20) return "الموقف المجاني (الباركنج)";
+            if (pos === 30) return "الذهاب للسجن";
+            if (pos === 4 || pos === 38) return "ضريبة";
+            if (pos === 5 || pos === 15 || pos === 25 || pos === 35) return "سكة قطار";
+            if (pos === 12 || pos === 28) return "خدمات";
+            return "عقار";
         }
     </script>
 </body>
