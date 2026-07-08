@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monopoly JOR - Master Edition</title>
     <style>
-        :root { --deep-blue: #001f3f; --muted-gold: #d4af37; --glass: rgba(255, 255, 255, 0.1); }
+        :root { --deep-blue: #001f3f; --muted-gold: #d4af37; }
         body { background: var(--deep-blue); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: sans-serif; }
         
         #board {
@@ -15,16 +15,17 @@
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
         
-        .tile { border: 0.1vw solid var(--muted-gold); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2vw; text-align: center; color: var(--muted-gold); background: var(--glass); backdrop-filter: blur(2px); }
+        .tile { border: 0.1vw solid var(--muted-gold); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 0.9vw; text-align: center; color: var(--muted-gold); background: rgba(0,0,0,0.2); }
+        .color-strip { width: 100%; height: 15%; margin-bottom: 5%; }
         .active { border: 0.5vw solid #fff !important; background: var(--muted-gold) !important; color: #000 !important; font-weight: bold; transform: scale(1.05); z-index: 10; }
         
         .center-area { 
             grid-column: 2 / 11; grid-row: 2 / 11; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: var(--deep-blue); border: 0.3vw solid var(--muted-gold); border-radius: 0.5vw;
+            background: #002d5e; border: 0.3vw solid var(--muted-gold); border-radius: 0.5vw;
         }
         
-        button { padding: 1.5vw 3vw; background: #28a745; color: white; border: none; border-radius: 1vw; cursor: pointer; font-size: 2.2vw; font-weight: bold; }
-        #dice-result { font-size: 3vw; color: var(--muted-gold); margin-top: 1vh; }
+        button { padding: 1.5vw 3vw; background: #28a745; color: white; border: none; border-radius: 1vw; cursor: pointer; font-size: 2vw; font-weight: bold; }
+        #stats { color: var(--muted-gold); margin-top: 1vh; font-size: 2vw; }
     </style>
 </head>
 <body>
@@ -34,10 +35,10 @@
     <script>
         let pos = 0;
         const tiles = [
-            { id: 0, name: "انطلاق", icon: "🚀" }, { id: 1, name: "مكة", icon: "🕋" }, { id: 2, name: "ضريبة", icon: "💰" }, { id: 3, name: "البتراء", icon: "🏛️" }, { id: 4, name: "سكة", icon: "🚂" }, { id: 5, name: "القاهرة", icon: "🇪🇬" }, { id: 6, name: "باريس", icon: "🗼" }, { id: 7, name: "دبي", icon: "🏙️" }, { id: 8, name: "القدس", icon: "🕌" }, { id: 9, name: "لندن", icon: "🎡" },
-            { id: 10, name: "سجن", icon: "⚖️" }, { id: 11, name: "طوكيو", icon: "🗾" }, { id: 12, name: "خدمات", icon: "⚡" }, { id: 13, name: "نيويورك", icon: "🗽" }, { id: 14, name: "سكة", icon: "🚂" }, { id: 15, name: "روما", icon: "🇮🇹" }, { id: 16, name: "مدريد", icon: "🇪🇸" }, { id: 17, name: "سور", icon: "🧱" }, { id: 18, name: "أسطنبول", icon: "🇹🇷" }, { id: 19, name: "بيروت", icon: "🇱🇧" },
-            { id: 20, name: "موقف", icon: "🅿️" }, { id: 21, name: "موسكو", icon: "🇷🇺" }, { id: 22, name: "سدني", icon: "🇦🇺" }, { id: 23, name: "برلين", icon: "🇩🇪" }, { id: 24, name: "سكة", icon: "🚂" }, { id: 25, name: "خدمات", icon: "⚡" }, { id: 26, name: "بانكوك", icon: "🇹🇭" }, { id: 27, name: "أهرامات", icon: "🔺" }, { id: 28, name: "عمان", icon: "🇯🇴" }, { id: 29, name: "أثينا", icon: "🇬🇷" },
-            { id: 30, name: "للسجن", icon: "🔒" }, { id: 31, name: "فيينا", icon: "🇦🇹" }, { id: 32, name: "دلهي", icon: "🇮🇳" }, { id: 33, name: "ضريبة", icon: "💰" }, { id: 34, name: "سكة", icon: "🚂" }, { id: 35, name: "سنغافورة", icon: "🇸🇬" }, { id: 36, name: "مراكش", icon: "🇲🇦" }, { id: 37, name: "الكويت", icon: "🇰🇼" }, { id: 38, name: "الرياض", icon: "🇸🇦" }, { id: 39, name: "بغداد", icon: "🇮🇶" }
+            { id: 0, name: "انطلاق", color: "transparent" }, { id: 1, name: "مكة", color: "#8B4513" }, { id: 2, name: "ضريبة", color: "transparent" }, { id: 3, name: "البتراء", color: "#8B4513" }, { id: 4, name: "سكة", color: "transparent" }, { id: 5, name: "القاهرة", color: "#87CEEB" }, { id: 6, name: "باريس", color: "#87CEEB" }, { id: 7, name: "دبي", color: "#87CEEB" }, { id: 8, name: "القدس", color: "transparent" }, { id: 9, name: "لندن", color: "transparent" },
+            { id: 10, name: "سجن", color: "transparent" }, { id: 11, name: "طوكيو", color: "#FF00FF" }, { id: 12, name: "خدمات", color: "transparent" }, { id: 13, name: "نيويورك", color: "#FF00FF" }, { id: 14, name: "سكة", color: "transparent" }, { id: 15, name: "روما", color: "#FF8C00" }, { id: 16, name: "مدريد", color: "#FF8C00" }, { id: 17, name: "سور", color: "#FF8C00" }, { id: 18, name: "أسطنبول", color: "transparent" }, { id: 19, name: "بيروت", color: "transparent" },
+            { id: 20, name: "موقف", color: "transparent" }, { id: 21, name: "موسكو", color: "#FF0000" }, { id: 22, name: "سدني", color: "#FF0000" }, { id: 23, name: "برلين", color: "#FF0000" }, { id: 24, name: "سكة", color: "transparent" }, { id: 25, name: "خدمات", color: "transparent" }, { id: 26, name: "بانكوك", color: "#FFFF00" }, { id: 27, name: "أهرامات", color: "#FFFF00" }, { id: 28, name: "عمان", color: "#FFFF00" }, { id: 29, name: "أثينا", color: "transparent" },
+            { id: 30, name: "للسجن", color: "transparent" }, { id: 31, name: "فيينا", color: "#008000" }, { id: 32, name: "دلهي", color: "#008000" }, { id: 33, name: "ضريبة", color: "transparent" }, { id: 34, name: "سكة", color: "transparent" }, { id: 35, name: "سنغافورة", color: "#00008B" }, { id: 36, name: "مراكش", color: "#00008B" }, { id: 37, name: "الكويت", color: "#00008B" }, { id: 38, name: "الرياض", color: "transparent" }, { id: 39, name: "بغداد", color: "transparent" }
         ];
 
         const layout = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 39, -1, -1, -1, -1, -1, -1, -1, -1, -1, 11, 38, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 37, -1, -1, -1, -1, -1, -1, -1, -1, -1, 13, 36, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14, 35, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, 34, -1, -1, -1, -1, -1, -1, -1, -1, -1, 16, 33, -1, -1, -1, -1, -1, -1, -1, -1, -1, 17, 32, -1, -1, -1, -1, -1, -1, -1, -1, -1, 18, 31, -1, -1, -1, -1, -1, -1, -1, -1, -1, 19, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20];
@@ -50,7 +51,7 @@
                     if (!board.querySelector('.center-area')) {
                         let center = document.createElement('div');
                         center.className = 'center-area';
-                        center.innerHTML = '<h1 style="font-size:3vw; margin:0;">MONOPOLY</h1><button onclick="movePlayer()">رمي النرد</button><div id="dice-result">0</div>';
+                        center.innerHTML = '<h1 style="font-size:2vw; margin:0;">MONOPOLY</h1><button onclick="movePlayer()">رمي النرد</button><div id="stats">مربع: 0</div>';
                         board.appendChild(center);
                     }
                 } else {
@@ -58,7 +59,7 @@
                     let div = document.createElement('div');
                     div.className = 'tile';
                     div.id = 'tile-' + idx;
-                    div.innerHTML = `<span style="font-size:1.5vw;">${tile.icon}</span><br>${tile.name}`;
+                    div.innerHTML = `<div class="color-strip" style="background:${tile.color}"></div>${tile.name}`;
                     board.appendChild(div);
                 }
             });
@@ -70,7 +71,7 @@
             document.getElementById('tile-' + pos).classList.remove('active');
             pos = (pos + roll) % 40;
             document.getElementById('tile-' + pos).classList.add('active');
-            document.getElementById('dice-result').innerText = roll;
+            document.getElementById('stats').innerText = "مربع: " + pos;
         }
         initBoard();
     </script>
