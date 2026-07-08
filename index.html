@@ -2,21 +2,65 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Monopoly JOR - Ultimate Pro Master</title>
+    <title>Monopoly JOR - Ultimate Royal Edition</title>
     <style>
-        :root { --bg: #0a2540; --gold: #d4af37; --card: #003a70; }
-        body { background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; margin: 0; min-height: 100vh; font-family: sans-serif; }
+        :root { 
+            --deep-blue: #0a2540; 
+            --royal-gold: #d4af37; 
+            --card-blue: #003a70;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+        body { 
+            background: var(--deep-blue); 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            margin: 0; 
+            min-height: 100vh; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
         
-        #hud { display: flex; gap: 20px; font-size: 1.2rem; background: #001f3f; padding: 15px 30px; border-radius: 20px; border: 2px solid var(--gold); margin: 15px; }
+        /* HUD - الرصيد والنرد */
+        #hud { 
+            display: flex; gap: 20px; font-size: 1.2rem; 
+            background: #001f3f; padding: 15px 30px; 
+            border-radius: 20px; border: 2px solid var(--royal-gold); 
+            margin: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
         
-        #board { display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); width: 90vw; height: 90vw; max-width: 500px; border: 1vw solid var(--gold); border-radius: 1vw; }
-        .tile { border: 1px solid #1e3a5f; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; background: var(--card); text-align: center; }
-        .active { background: var(--gold) !important; color: black; font-weight: bold; transform: scale(1.05); z-index: 10; }
-        .center-area { grid-column: 2 / 11; grid-row: 2 / 11; background: #002d5e; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; }
+        /* اللوحة - الإطار الكلاسيكي */
+        #board { 
+            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
+            width: 90vw; height: 90vw; max-width: 550px; border: 1.5vw solid var(--royal-gold); 
+            border-radius: 1vw; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .tile { 
+            border: 1px solid rgba(212, 175, 55, 0.2); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 0.5rem; background: var(--card); text-align: center;
+        }
+        .active { 
+            background: var(--royal-gold) !important; color: black; 
+            font-weight: bold; transform: scale(1.05); z-index: 10;
+            box-shadow: 0 0 15px var(--royal-gold);
+        }
+        .center-area { 
+            grid-column: 2 / 11; grid-row: 2 / 11; 
+            background: #002d5e; display: flex; align-items: center; justify-content: center; 
+            font-size: 1.2rem; font-weight: bold; color: var(--royal-gold);
+        }
 
+        /* التحكم بالأسفل */
         #controls { margin-top: 20px; display: flex; align-items: center; gap: 20px; }
-        #go-btn { width: 110px; height: 110px; background: #ff4757; border-radius: 50%; border: 6px solid white; font-size: 1.8rem; font-weight: bold; cursor: pointer; color: white; }
-        #multiplier { padding: 10px; font-size: 1.2rem; border-radius: 10px; background: white; color: black; }
+        #go-btn { 
+            width: 110px; height: 110px; background: #ff4757; 
+            border-radius: 50%; border: 6px solid white; 
+            font-size: 1.8rem; font-weight: bold; cursor: pointer; color: white;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+        }
+        #go-btn:active { transform: translateY(4px); }
+        #multiplier { padding: 10px; font-size: 1.2rem; border-radius: 10px; background: white; color: black; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -45,6 +89,7 @@
             "فيينا", "دلهي", "ضريبة", "سكة", "سنغافورة", "مراكش", "الكويت", "الرياض", "بغداد"
         ];
 
+        // مخطط اللوحة (40 مربع)
         const layout = [0,1,2,3,4,5,6,7,8,9,10, 39,-1,-1,-1,-1,-1,-1,-1,-1,-1,11, 38,-1,-1,-1,-1,-1,-1,-1,-1,-1,12, 37,-1,-1,-1,-1,-1,-1,-1,-1,-1,13, 36,-1,-1,-1,-1,-1,-1,-1,-1,-1,14, 35,-1,-1,-1,-1,-1,-1,-1,-1,-1,15, 34,-1,-1,-1,-1,-1,-1,-1,-1,-1,16, 33,-1,-1,-1,-1,-1,-1,-1,-1,-1,17, 32,-1,-1,-1,-1,-1,-1,-1,-1,-1,18, 31,-1,-1,-1,-1,-1,-1,-1,-1,-1,19, 30,29,28,27,26,25,24,23,22,21,20];
 
         function init() {
@@ -69,29 +114,33 @@
 
         function roll() {
             let mult = parseInt(document.getElementById('multiplier').value);
-            if (diceBal < mult) { alert("نرد غير كافٍ!"); return; }
+            if (diceBal < mult) { alert("نرد غير كافٍ للمضاعفة!"); return; }
 
             let d1 = Math.floor(Math.random() * 6) + 1;
             let d2 = Math.floor(Math.random() * 6) + 1;
             let total = d1 + d2;
             diceBal -= mult;
 
+            // منطق السجن المطور
             if (isJailed) {
                 if (d1 === d2) {
                     isJailed = false;
-                    diceBal += (d1 * mult);
-                    alert(`تطابق! خرجت وحصلت على ${d1 * mult} نرد.`);
+                    let bonus = (d1 * mult);
+                    diceBal += bonus;
+                    alert(`تطابق (${d1}+${d1})! خرجت وحصلت على ${bonus} نرد إضافي.`);
                 } else {
                     jailAttempts++;
+                    alert(`محاولة ${jailAttempts}/3: لا تطابق.`);
                     if (jailAttempts >= 3) { isJailed = false; alert("انتهت المحاولات، خرجت."); }
-                    else { alert(`محاولة ${jailAttempts}/3: لا تطابق.`); return; }
+                    return;
                 }
             }
 
+            // الحركة
             document.getElementById('tile-' + pos).classList.remove('active');
             pos = (pos + total) % 40;
             
-            // المكافآت والعوائد
+            // المكافآت والعوائد (المضاعف يؤثر على العائد)
             if (pos === 0) { balance += (200 * mult); diceBal += (100 * mult); }
             else if (pos === 10) { isJailed = true; jailAttempts = 0; }
             else { balance += (50 * mult); }
