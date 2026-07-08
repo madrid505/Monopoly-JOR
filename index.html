@@ -3,79 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monopoly JOR</title>
+    <title>Monopoly JOR - Icon Edition</title>
     <style>
-        body { margin: 0; background: linear-gradient(135deg, #001f3f, #003366); color: #d4af37; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        .board-container { width: 95%; max-width: 500px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 2px solid #d4af37; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-        h1 { color: #d4af37; text-shadow: 2px 2px 4px #000; }
-        .stats { font-size: 19px; margin: 12px 0; font-weight: bold; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; }
-        button { padding: 15px 40px; background: #d4af37; border: none; border-radius: 10px; cursor: pointer; color: #001f3f; font-weight: bold; font-size: 18px; transition: transform 0.2s; }
-        button:active { transform: scale(0.95); }
-        .footer { margin-top: 25px; font-size: 13px; opacity: 0.7; font-style: italic; }
+        :root { --deep-blue: #001f3f; --muted-gold: #d4af37; }
+        body { background: var(--deep-blue); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        
+        #board {
+            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr);
+            width: 95vw; height: 95vw; max-width: 550px; max-height: 550px;
+            border: 0.8vw solid var(--muted-gold); background: var(--deep-blue); border-radius: 1vw;
+        }
+        
+        .tile { 
+            border: 0.1vw solid var(--muted-gold); display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 1.8vw; text-align: center; color: var(--muted-gold); background: rgba(0,0,0,0.3);
+        }
+        
+        .active { border: 0.5vw solid #fff !important; background: var(--muted-gold) !important; color: #000 !important; font-weight: bold; transform: scale(1.05); }
+        
+        .center-area { 
+            grid-column: 2 / 11; grid-row: 2 / 11; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: var(--deep-blue); border: 0.3vw solid var(--muted-gold); border-radius: 0.5vw;
+        }
+        
+        button { padding: 1.5vw 3vw; background: #28a745; color: white; border: none; border-radius: 1vw; cursor: pointer; font-size: 2.5vw; }
     </style>
 </head>
 <body>
 
-    <div class="board-container">
-        <h1>Monopoly JOR</h1>
-        <div class="stats">الرصيد: <span id="money">1,000,000</span> دينار</div>
-        <div class="stats">النرد المتاح: <span id="diceCount">1000</span></div>
-        <div class="stats">المربع الحالي: <span id="position">0</span></div>
-        <button onclick="movePlayer()">ارمي النرد</button>
-        <p id="message">جاهز للتحرك في رحلة المليون؟</p>
-        <div class="footer">تطوير: Anas Al Salayta</div>
-    </div>
+    <div id="board"></div>
 
     <script>
-        // المتغيرات الأساسية
-        let money = 1000000;
-        let diceCount = 1000;
-        let position = 0;
+        let pos = 0;
+        // سأقوم لاحقاً باستبدال هذه النصوص بروابط صور
+        const tileData = [
+            { name: "انطلاق", icon: "🚀" }, { name: "مكة", icon: "🕋" }, { name: "ضريبة", icon: "💰" }, { name: "البتراء", icon: "🏛️" }, 
+            { name: "سكة", icon: "🚂" }, { name: "القاهرة", icon: "🇪🇬" }, { name: "باريس", icon: "🗼" }, { name: "دبي", icon: "🏙️" },
+            { name: "القدس", icon: "🕌" }, { name: "لندن", icon: "🎡" }, { name: "سجن", icon: "⚖️" }, { name: "طوكيو", icon: "🗾" },
+            { name: "خدمات", icon: "⚡" }, { name: "نيويورك", icon: "🗽" }, { name: "سكة", icon: "🚂" }, { name: "روما", icon: "🇮🇹" },
+            { name: "مدريد", icon: "🇪🇸" }, { name: "سور", icon: "🧱" }, { name: "أسطنبول", icon: "🇹🇷" }, { name: "بيروت", icon: "🇱🇧" },
+            { name: "موقف", icon: "🅿️" }, { name: "موسكو", icon: "🇷🇺" }, { name: "سدني", icon: "🇦🇺" }, { name: "برلين", icon: "🇩🇪" },
+            { name: "سكة", icon: "🚂" }, { name: "خدمات", icon: "⚡" }, { name: "بانكوك", icon: "🇹🇭" }, { name: "أهرامات", icon: "🔺" },
+            { name: "عمان", icon: "🇯🇴" }, { name: "أثينا", icon: "🇬🇷" }, { name: "سجن", icon: "🔒" }, { name: "فيينا", icon: "🇦🇹" },
+            { name: "دلهي", icon: "🇮🇳" }, { name: "ضريبة", icon: "💰" }, { name: "سكة", icon: "🚂" }, { name: "سنغافورة", icon: "🇸🇬" },
+            { name: "مراكش", icon: "🇲🇦" }, { name: "الكويت", icon: "🇰🇼" }, { name: "الرياض", icon: "🇸🇦" }, { name: "بغداد", icon: "🇮🇶" }
+        ];
+
+        const layout = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 39, -1, -1, -1, -1, -1, -1, -1, -1, -1, 11, 38, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 37, -1, -1, -1, -1, -1, -1, -1, -1, -1, 13, 36, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14, 35, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, 34, -1, -1, -1, -1, -1, -1, -1, -1, -1, 16, 33, -1, -1, -1, -1, -1, -1, -1, -1, -1, 17, 32, -1, -1, -1, -1, -1, -1, -1, -1, -1, 18, 31, -1, -1, -1, -1, -1, -1, -1, -1, -1, 19, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20];
+
+        function initBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            layout.forEach(idx => {
+                if (idx === -1) {
+                    if (!board.querySelector('.center-area')) {
+                        let center = document.createElement('div');
+                        center.className = 'center-area';
+                        center.innerHTML = '<h1 style="font-size:3vw; margin:0;">MONOPOLY</h1><button onclick="movePlayer()">رمي النرد</button>';
+                        board.appendChild(center);
+                    }
+                } else {
+                    let div = document.createElement('div');
+                    div.className = 'tile';
+                    div.id = 'tile-' + idx;
+                    div.innerHTML = `<span style="font-size:1vw;">${tileData[idx].icon}</span><br>${tileData[idx].name}`;
+                    board.appendChild(div);
+                }
+            });
+            document.getElementById('tile-' + pos).classList.add('active');
+        }
 
         function movePlayer() {
-            if (diceCount > 0) {
-                diceCount--;
-                let dice = Math.floor(Math.random() * 6) + 1;
-                position = (position + dice) % 40; // لوحة من 40 مربع
-                
-                let type = getTileType(position);
-                let message = "تحركت " + dice + " مربعات، وصلت إلى: " + type + ". ";
-
-                // منطق اللعبة حسب نوع المربع
-                if (type === "ضريبة") {
-                    money -= 200;
-                    message += "وقعت في فخ الضريبة! خسرت 200 دينار.";
-                } else if (type === "سكة قطار") {
-                    message += "أرض القطار! قمت بهدم عقار الخصم!";
-                } else if (type === "عقار") {
-                    money += 100;
-                    message += "عقار ممتاز، ربحت 100 دينار إيجار!";
-                } else {
-                    message += "مربع خاص، لا توجد حركة مالية.";
-                }
-
-                // تحديث الواجهة
-                document.getElementById('money').innerText = money.toLocaleString();
-                document.getElementById('diceCount').innerText = diceCount;
-                document.getElementById('position').innerText = position;
-                document.getElementById('message').innerText = message;
-
-            } else {
-                document.getElementById('message').innerText = "نفد النرد لديك! انتظر حتى الغد.";
-            }
+            let roll = Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1;
+            document.getElementById('tile-' + pos).classList.remove('active');
+            pos = (pos + roll) % 40;
+            document.getElementById('tile-' + pos).classList.add('active');
         }
 
-        // توزيع المربعات حسب طلبك (40 مربع)
-        function getTileType(pos) {
-            if (pos === 0) return "الانطلاق";
-            if (pos === 10) return "السجن";
-            if (pos === 20) return "الموقف المجاني (الباركنج)";
-            if (pos === 30) return "الذهاب للسجن";
-            if (pos === 4 || pos === 38) return "ضريبة";
-            if (pos === 5 || pos === 15 || pos === 25 || pos === 35) return "سكة قطار";
-            if (pos === 12 || pos === 28) return "خدمات";
-            return "عقار";
-        }
+        initBoard();
     </script>
 </body>
 </html>
