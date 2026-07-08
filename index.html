@@ -2,78 +2,105 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monopoly JOR - Master Edition</title>
+    <title>Monopoly JOR - Ultimate Pro Master</title>
     <style>
-        :root { --deep-blue: #001f3f; --muted-gold: #d4af37; }
-        body { background: var(--deep-blue); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: sans-serif; }
+        :root { --bg: #0a2540; --gold: #d4af37; --card: #003a70; }
+        body { background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; margin: 0; min-height: 100vh; font-family: sans-serif; }
         
-        #board {
-            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr);
-            width: 95vw; height: 95vw; max-width: 600px; max-height: 600px;
-            border: 1vw solid var(--muted-gold); background: var(--deep-blue); border-radius: 1vw;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
+        #hud { display: flex; gap: 20px; font-size: 1.2rem; background: #001f3f; padding: 15px 30px; border-radius: 20px; border: 2px solid var(--gold); margin: 15px; }
         
-        .tile { border: 0.1vw solid var(--muted-gold); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 0.9vw; text-align: center; color: var(--muted-gold); background: rgba(0,0,0,0.2); }
-        .color-strip { width: 100%; height: 15%; margin-bottom: 5%; }
-        .active { border: 0.5vw solid #fff !important; background: var(--muted-gold) !important; color: #000 !important; font-weight: bold; transform: scale(1.05); z-index: 10; }
-        
-        .center-area { 
-            grid-column: 2 / 11; grid-row: 2 / 11; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: #002d5e; border: 0.3vw solid var(--muted-gold); border-radius: 0.5vw;
-        }
-        
-        button { padding: 1.5vw 3vw; background: #28a745; color: white; border: none; border-radius: 1vw; cursor: pointer; font-size: 2vw; font-weight: bold; }
-        #stats { color: var(--muted-gold); margin-top: 1vh; font-size: 2vw; }
+        #board { display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); width: 90vw; height: 90vw; max-width: 500px; border: 1vw solid var(--gold); border-radius: 1vw; }
+        .tile { border: 1px solid #1e3a5f; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; background: var(--card); text-align: center; }
+        .active { background: var(--gold) !important; color: black; font-weight: bold; transform: scale(1.05); z-index: 10; }
+        .center-area { grid-column: 2 / 11; grid-row: 2 / 11; background: #002d5e; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; }
+
+        #controls { margin-top: 20px; display: flex; align-items: center; gap: 20px; }
+        #go-btn { width: 110px; height: 110px; background: #ff4757; border-radius: 50%; border: 6px solid white; font-size: 1.8rem; font-weight: bold; cursor: pointer; color: white; }
+        #multiplier { padding: 10px; font-size: 1.2rem; border-radius: 10px; background: white; color: black; }
     </style>
 </head>
 <body>
 
+    <div id="hud">
+        <div>الرصيد: <span id="balance">1500</span></div>
+        <div>النرد: <span id="dice-bal">500</span></div>
+    </div>
+
     <div id="board"></div>
 
+    <div id="controls">
+        <select id="multiplier">
+            <option value="1">x1</option><option value="10">x10</option><option value="50">x50</option><option value="100">x100</option>
+        </select>
+        <button id="go-btn" onclick="roll()">GO</button>
+    </div>
+
     <script>
-        let pos = 0;
-        const tiles = [
-            { id: 0, name: "انطلاق", color: "transparent" }, { id: 1, name: "مكة", color: "#8B4513" }, { id: 2, name: "ضريبة", color: "transparent" }, { id: 3, name: "البتراء", color: "#8B4513" }, { id: 4, name: "سكة", color: "transparent" }, { id: 5, name: "القاهرة", color: "#87CEEB" }, { id: 6, name: "باريس", color: "#87CEEB" }, { id: 7, name: "دبي", color: "#87CEEB" }, { id: 8, name: "القدس", color: "transparent" }, { id: 9, name: "لندن", color: "transparent" },
-            { id: 10, name: "سجن", color: "transparent" }, { id: 11, name: "طوكيو", color: "#FF00FF" }, { id: 12, name: "خدمات", color: "transparent" }, { id: 13, name: "نيويورك", color: "#FF00FF" }, { id: 14, name: "سكة", color: "transparent" }, { id: 15, name: "روما", color: "#FF8C00" }, { id: 16, name: "مدريد", color: "#FF8C00" }, { id: 17, name: "سور", color: "#FF8C00" }, { id: 18, name: "أسطنبول", color: "transparent" }, { id: 19, name: "بيروت", color: "transparent" },
-            { id: 20, name: "موقف", color: "transparent" }, { id: 21, name: "موسكو", color: "#FF0000" }, { id: 22, name: "سدني", color: "#FF0000" }, { id: 23, name: "برلين", color: "#FF0000" }, { id: 24, name: "سكة", color: "transparent" }, { id: 25, name: "خدمات", color: "transparent" }, { id: 26, name: "بانكوك", color: "#FFFF00" }, { id: 27, name: "أهرامات", color: "#FFFF00" }, { id: 28, name: "عمان", color: "#FFFF00" }, { id: 29, name: "أثينا", color: "transparent" },
-            { id: 30, name: "للسجن", color: "transparent" }, { id: 31, name: "فيينا", color: "#008000" }, { id: 32, name: "دلهي", color: "#008000" }, { id: 33, name: "ضريبة", color: "transparent" }, { id: 34, name: "سكة", color: "transparent" }, { id: 35, name: "سنغافورة", color: "#00008B" }, { id: 36, name: "مراكش", color: "#00008B" }, { id: 37, name: "الكويت", color: "#00008B" }, { id: 38, name: "الرياض", color: "transparent" }, { id: 39, name: "بغداد", color: "transparent" }
+        let pos = 0, balance = 1500, diceBal = 500, isJailed = false, jailAttempts = 0;
+        
+        const tileNames = [
+            "انطلاق", "مكة", "ضريبة", "البتراء", "سكة", "القاهرة", "باريس", "دبي", "القدس", "لندن", "سجن",
+            "طوكيو", "خدمات", "نيويورك", "سكة", "روما", "مدريد", "سور", "أسطنبول", "بيروت", "موقف",
+            "موسكو", "سدني", "برلين", "سكة", "خدمات", "بانكوك", "أهرامات", "عمان", "أثينا", "للسجن",
+            "فيينا", "دلهي", "ضريبة", "سكة", "سنغافورة", "مراكش", "الكويت", "الرياض", "بغداد"
         ];
 
-        const layout = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 39, -1, -1, -1, -1, -1, -1, -1, -1, -1, 11, 38, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 37, -1, -1, -1, -1, -1, -1, -1, -1, -1, 13, 36, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14, 35, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, 34, -1, -1, -1, -1, -1, -1, -1, -1, -1, 16, 33, -1, -1, -1, -1, -1, -1, -1, -1, -1, 17, 32, -1, -1, -1, -1, -1, -1, -1, -1, -1, 18, 31, -1, -1, -1, -1, -1, -1, -1, -1, -1, 19, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20];
+        const layout = [0,1,2,3,4,5,6,7,8,9,10, 39,-1,-1,-1,-1,-1,-1,-1,-1,-1,11, 38,-1,-1,-1,-1,-1,-1,-1,-1,-1,12, 37,-1,-1,-1,-1,-1,-1,-1,-1,-1,13, 36,-1,-1,-1,-1,-1,-1,-1,-1,-1,14, 35,-1,-1,-1,-1,-1,-1,-1,-1,-1,15, 34,-1,-1,-1,-1,-1,-1,-1,-1,-1,16, 33,-1,-1,-1,-1,-1,-1,-1,-1,-1,17, 32,-1,-1,-1,-1,-1,-1,-1,-1,-1,18, 31,-1,-1,-1,-1,-1,-1,-1,-1,-1,19, 30,29,28,27,26,25,24,23,22,21,20];
 
-        function initBoard() {
+        function init() {
             const board = document.getElementById('board');
-            board.innerHTML = '';
             layout.forEach(idx => {
                 if (idx === -1) {
                     if (!board.querySelector('.center-area')) {
                         let center = document.createElement('div');
                         center.className = 'center-area';
-                        center.innerHTML = '<h1 style="font-size:2vw; margin:0;">MONOPOLY</h1><button onclick="movePlayer()">رمي النرد</button><div id="stats">مربع: 0</div>';
+                        center.innerText = 'MONOPOLY JOR';
                         board.appendChild(center);
                     }
                 } else {
-                    let tile = tiles.find(t => t.id === idx);
                     let div = document.createElement('div');
-                    div.className = 'tile';
-                    div.id = 'tile-' + idx;
-                    div.innerHTML = `<div class="color-strip" style="background:${tile.color}"></div>${tile.name}`;
+                    div.className = 'tile'; div.id = 'tile-' + idx;
+                    div.innerText = tileNames[idx];
                     board.appendChild(div);
                 }
             });
-            document.getElementById('tile-' + pos).classList.add('active');
+            document.getElementById('tile-0').classList.add('active');
         }
 
-        function movePlayer() {
-            let roll = Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1;
+        function roll() {
+            let mult = parseInt(document.getElementById('multiplier').value);
+            if (diceBal < mult) { alert("نرد غير كافٍ!"); return; }
+
+            let d1 = Math.floor(Math.random() * 6) + 1;
+            let d2 = Math.floor(Math.random() * 6) + 1;
+            let total = d1 + d2;
+            diceBal -= mult;
+
+            if (isJailed) {
+                if (d1 === d2) {
+                    isJailed = false;
+                    diceBal += (d1 * mult);
+                    alert(`تطابق! خرجت وحصلت على ${d1 * mult} نرد.`);
+                } else {
+                    jailAttempts++;
+                    if (jailAttempts >= 3) { isJailed = false; alert("انتهت المحاولات، خرجت."); }
+                    else { alert(`محاولة ${jailAttempts}/3: لا تطابق.`); return; }
+                }
+            }
+
             document.getElementById('tile-' + pos).classList.remove('active');
-            pos = (pos + roll) % 40;
+            pos = (pos + total) % 40;
+            
+            // المكافآت والعوائد
+            if (pos === 0) { balance += (200 * mult); diceBal += (100 * mult); }
+            else if (pos === 10) { isJailed = true; jailAttempts = 0; }
+            else { balance += (50 * mult); }
+
+            document.getElementById('balance').innerText = balance;
+            document.getElementById('dice-bal').innerText = diceBal;
             document.getElementById('tile-' + pos).classList.add('active');
-            document.getElementById('stats').innerText = "مربع: " + pos;
         }
-        initBoard();
+        init();
     </script>
 </body>
 </html>
