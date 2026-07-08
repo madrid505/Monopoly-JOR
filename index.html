@@ -2,65 +2,22 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Monopoly JOR - Ultimate Royal Edition</title>
+    <title>Monopoly JOR - Animated Pro</title>
     <style>
-        :root { 
-            --deep-blue: #0a2540; 
-            --royal-gold: #d4af37; 
-            --card-blue: #003a70;
-            --glass: rgba(255, 255, 255, 0.1);
-        }
-        body { 
-            background: var(--deep-blue); 
-            color: white; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            margin: 0; 
-            min-height: 100vh; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-        }
+        :root { --bg: #0a2540; --gold: #d4af37; --glass: rgba(255, 255, 255, 0.05); }
+        body { background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; margin: 0; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
         
-        /* HUD - الرصيد والنرد */
-        #hud { 
-            display: flex; gap: 20px; font-size: 1.2rem; 
-            background: #001f3f; padding: 15px 30px; 
-            border-radius: 20px; border: 2px solid var(--royal-gold); 
-            margin: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
+        #hud { display: flex; gap: 30px; font-size: 1.5rem; background: var(--glass); backdrop-filter: blur(10px); padding: 20px 40px; border-radius: 50px; border: 1px solid var(--gold); margin: 20px; color: var(--gold); font-weight: bold; }
         
-        /* اللوحة - الإطار الكلاسيكي */
-        #board { 
-            display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); 
-            width: 90vw; height: 90vw; max-width: 550px; border: 1.5vw solid var(--royal-gold); 
-            border-radius: 1vw; box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        .tile { 
-            border: 1px solid rgba(212, 175, 55, 0.2); 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 0.5rem; background: var(--card); text-align: center;
-        }
-        .active { 
-            background: var(--royal-gold) !important; color: black; 
-            font-weight: bold; transform: scale(1.05); z-index: 10;
-            box-shadow: 0 0 15px var(--royal-gold);
-        }
-        .center-area { 
-            grid-column: 2 / 11; grid-row: 2 / 11; 
-            background: #002d5e; display: flex; align-items: center; justify-content: center; 
-            font-size: 1.2rem; font-weight: bold; color: var(--royal-gold);
-        }
-
-        /* التحكم بالأسفل */
-        #controls { margin-top: 20px; display: flex; align-items: center; gap: 20px; }
-        #go-btn { 
-            width: 110px; height: 110px; background: #ff4757; 
-            border-radius: 50%; border: 6px solid white; 
-            font-size: 1.8rem; font-weight: bold; cursor: pointer; color: white;
-            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
-        }
-        #go-btn:active { transform: translateY(4px); }
-        #multiplier { padding: 10px; font-size: 1.2rem; border-radius: 10px; background: white; color: black; cursor: pointer; }
+        #board { display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr); width: 90vw; height: 90vw; max-width: 600px; border: 1.5vw solid var(--gold); border-radius: 20px; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        .tile { border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; background: rgba(0, 58, 112, 0.8); transition: background 0.3s; }
+        .active { background: var(--gold) !important; color: black; font-weight: bold; transform: scale(1.05); box-shadow: 0 0 20px var(--gold); z-index: 10; }
+        .center-area { grid-column: 2 / 11; grid-row: 2 / 11; background: #002d5e; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gold); }
+        
+        #controls { margin-top: 30px; display: flex; align-items: center; gap: 30px; }
+        #go-btn { width: 120px; height: 120px; background: #ff4757; border-radius: 50%; border: 8px solid white; font-size: 2rem; cursor: pointer; color: white; transition: 0.3s; }
+        #go-btn:disabled { background: #555; cursor: not-allowed; }
+        #multiplier { padding: 15px; font-size: 1.5rem; border-radius: 15px; background: white; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -73,23 +30,25 @@
     <div id="board"></div>
 
     <div id="controls">
-        <select id="multiplier">
-            <option value="1">x1</option><option value="10">x10</option><option value="50">x50</option><option value="100">x100</option>
-        </select>
-        <button id="go-btn" onclick="roll()">GO</button>
+        <select id="multiplier"><option value="1">x1</option><option value="10">x10</option><option value="50">x50</option><option value="100">x100</option></select>
+        <button id="go-btn" onclick="startRolling()">GO</button>
     </div>
 
     <script>
-        let pos = 0, balance = 1500, diceBal = 500, isJailed = false, jailAttempts = 0;
-        
-        const tileNames = [
-            "انطلاق", "مكة", "ضريبة", "البتراء", "سكة", "القاهرة", "باريس", "دبي", "القدس", "لندن", "سجن",
-            "طوكيو", "خدمات", "نيويورك", "سكة", "روما", "مدريد", "سور", "أسطنبول", "بيروت", "موقف",
-            "موسكو", "سدني", "برلين", "سكة", "خدمات", "بانكوك", "أهرامات", "عمان", "أثينا", "للسجن",
-            "فيينا", "دلهي", "ضريبة", "سكة", "سنغافورة", "مراكش", "الكويت", "الرياض", "بغداد"
+        let pos = 0, balance = 1500, diceBal = 500, isJailed = false, isMoving = false;
+        const tiles = [
+            {name: "انطلاق", icon: "🚀"}, {name: "مكة", icon: "🕋"}, {name: "ضريبة", icon: "💰"}, {name: "البتراء", icon: "🏛️"}, 
+            {name: "سكة", icon: "🚂"}, {name: "القاهرة", icon: "🇪🇬"}, {name: "باريس", icon: "🗼"}, {name: "دبي", icon: "🏙️"}, 
+            {name: "القدس", icon: "🕌"}, {name: "لندن", icon: "🎡"}, {name: "سجن", icon: "⚖️"}, {name: "طوكيو", icon: "🗾"},
+            {name: "خدمات", icon: "⚡"}, {name: "نيويورك", icon: "🗽"}, {name: "سكة", icon: "🚂"}, {name: "روما", icon: "🇮🇹"},
+            {name: "مدريد", icon: "🇪🇸"}, {name: "سور", icon: "🧱"}, {name: "أسطنبول", icon: "🇹🇷"}, {name: "بيروت", icon: "🇱🇧"},
+            {name: "موقف", icon: "🅿️"}, {name: "موسكو", icon: "🇷🇺"}, {name: "سدني", icon: "🇦🇺"}, {name: "برلين", icon: "🇩🇪"},
+            {name: "سكة", icon: "🚂"}, {name: "خدمات", icon: "⚡"}, {name: "بانكوك", icon: "🇹🇭"}, {name: "أهرامات", icon: "🔺"},
+            {name: "عمان", icon: "🇯🇴"}, {name: "أثينا", icon: "🇬🇷"}, {name: "للسجن", icon: "🔒"}, {name: "فيينا", icon: "🇦🇹"},
+            {name: "دلهي", icon: "🇮🇳"}, {name: "ضريبة", icon: "💰"}, {name: "سكة", icon: "🚂"}, {name: "سنغافورة", icon: "🇸🇬"},
+            {name: "مراكش", icon: "🇲🇦"}, {name: "الكويت", icon: "🇰🇼"}, {name: "الرياض", icon: "🇸🇦"}, {name: "بغداد", icon: "🇮🇶"}
         ];
 
-        // مخطط اللوحة (40 مربع)
         const layout = [0,1,2,3,4,5,6,7,8,9,10, 39,-1,-1,-1,-1,-1,-1,-1,-1,-1,11, 38,-1,-1,-1,-1,-1,-1,-1,-1,-1,12, 37,-1,-1,-1,-1,-1,-1,-1,-1,-1,13, 36,-1,-1,-1,-1,-1,-1,-1,-1,-1,14, 35,-1,-1,-1,-1,-1,-1,-1,-1,-1,15, 34,-1,-1,-1,-1,-1,-1,-1,-1,-1,16, 33,-1,-1,-1,-1,-1,-1,-1,-1,-1,17, 32,-1,-1,-1,-1,-1,-1,-1,-1,-1,18, 31,-1,-1,-1,-1,-1,-1,-1,-1,-1,19, 30,29,28,27,26,25,24,23,22,21,20];
 
         function init() {
@@ -97,57 +56,43 @@
             layout.forEach(idx => {
                 if (idx === -1) {
                     if (!board.querySelector('.center-area')) {
-                        let center = document.createElement('div');
-                        center.className = 'center-area';
-                        center.innerText = 'MONOPOLY JOR';
-                        board.appendChild(center);
+                        let center = document.createElement('div'); center.className = 'center-area';
+                        center.innerHTML = '<h1>MONOPOLY</h1><p>JOR</p>'; board.appendChild(center);
                     }
                 } else {
-                    let div = document.createElement('div');
+                    let tile = tiles[idx]; let div = document.createElement('div');
                     div.className = 'tile'; div.id = 'tile-' + idx;
-                    div.innerText = tileNames[idx];
+                    div.innerHTML = `<span style="font-size:1.2rem">${tile.icon}</span><br>${tile.name}`;
                     board.appendChild(div);
                 }
             });
             document.getElementById('tile-0').classList.add('active');
         }
 
-        function roll() {
+        async function startRolling() {
+            if (isMoving) return;
             let mult = parseInt(document.getElementById('multiplier').value);
-            if (diceBal < mult) { alert("نرد غير كافٍ للمضاعفة!"); return; }
+            if (diceBal < mult) { alert("لا يوجد رصيد نرد كافٍ!"); return; }
 
-            let d1 = Math.floor(Math.random() * 6) + 1;
-            let d2 = Math.floor(Math.random() * 6) + 1;
-            let total = d1 + d2;
+            isMoving = true; document.getElementById('go-btn').disabled = true;
             diceBal -= mult;
-
-            // منطق السجن المطور
-            if (isJailed) {
-                if (d1 === d2) {
-                    isJailed = false;
-                    let bonus = (d1 * mult);
-                    diceBal += bonus;
-                    alert(`تطابق (${d1}+${d1})! خرجت وحصلت على ${bonus} نرد إضافي.`);
-                } else {
-                    jailAttempts++;
-                    alert(`محاولة ${jailAttempts}/3: لا تطابق.`);
-                    if (jailAttempts >= 3) { isJailed = false; alert("انتهت المحاولات، خرجت."); }
-                    return;
-                }
+            let total = (Math.floor(Math.random() * 6) + 1) + (Math.floor(Math.random() * 6) + 1);
+            
+            // الأنيميشن: التحرك خطوة بخطوة
+            for (let i = 0; i < total; i++) {
+                document.getElementById('tile-' + pos).classList.remove('active');
+                pos = (pos + 1) % 40;
+                document.getElementById('tile-' + pos).classList.add('active');
+                await new Promise(r => setTimeout(r, 200)); // سرعة الخطوة
             }
 
-            // الحركة
-            document.getElementById('tile-' + pos).classList.remove('active');
-            pos = (pos + total) % 40;
-            
-            // المكافآت والعوائد (المضاعف يؤثر على العائد)
+            // تحديثات بعد الوصول
             if (pos === 0) { balance += (200 * mult); diceBal += (100 * mult); }
-            else if (pos === 10) { isJailed = true; jailAttempts = 0; }
             else { balance += (50 * mult); }
-
+            
             document.getElementById('balance').innerText = balance;
             document.getElementById('dice-bal').innerText = diceBal;
-            document.getElementById('tile-' + pos).classList.add('active');
+            isMoving = false; document.getElementById('go-btn').disabled = false;
         }
         init();
     </script>
