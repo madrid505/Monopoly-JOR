@@ -3,30 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monopoly JOR - Icon Edition</title>
+    <title>Monopoly JOR - Master Edition</title>
     <style>
-        :root { --deep-blue: #001f3f; --muted-gold: #d4af37; }
-        body { background: var(--deep-blue); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        :root { --deep-blue: #001f3f; --muted-gold: #d4af37; --glass: rgba(255, 255, 255, 0.1); }
+        body { background: var(--deep-blue); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: sans-serif; }
         
         #board {
             display: grid; grid-template-columns: repeat(11, 1fr); grid-template-rows: repeat(11, 1fr);
-            width: 95vw; height: 95vw; max-width: 550px; max-height: 550px;
-            border: 0.8vw solid var(--muted-gold); background: var(--deep-blue); border-radius: 1vw;
+            width: 95vw; height: 95vw; max-width: 600px; max-height: 600px;
+            border: 1vw solid var(--muted-gold); background: var(--deep-blue); border-radius: 1vw;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
         
-        .tile { 
-            border: 0.1vw solid var(--muted-gold); display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 1.8vw; text-align: center; color: var(--muted-gold); background: rgba(0,0,0,0.3);
-        }
-        
-        .active { border: 0.5vw solid #fff !important; background: var(--muted-gold) !important; color: #000 !important; font-weight: bold; transform: scale(1.05); }
+        .tile { border: 0.1vw solid var(--muted-gold); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2vw; text-align: center; color: var(--muted-gold); background: var(--glass); backdrop-filter: blur(2px); }
+        .active { border: 0.5vw solid #fff !important; background: var(--muted-gold) !important; color: #000 !important; font-weight: bold; transform: scale(1.05); z-index: 10; }
         
         .center-area { 
             grid-column: 2 / 11; grid-row: 2 / 11; display: flex; flex-direction: column; align-items: center; justify-content: center;
             background: var(--deep-blue); border: 0.3vw solid var(--muted-gold); border-radius: 0.5vw;
         }
         
-        button { padding: 1.5vw 3vw; background: #28a745; color: white; border: none; border-radius: 1vw; cursor: pointer; font-size: 2.5vw; }
+        button { padding: 1.5vw 3vw; background: #28a745; color: white; border: none; border-radius: 1vw; cursor: pointer; font-size: 2.2vw; font-weight: bold; }
+        #dice-result { font-size: 3vw; color: var(--muted-gold); margin-top: 1vh; }
     </style>
 </head>
 <body>
@@ -35,18 +33,11 @@
 
     <script>
         let pos = 0;
-        // سأقوم لاحقاً باستبدال هذه النصوص بروابط صور
-        const tileData = [
-            { name: "انطلاق", icon: "🚀" }, { name: "مكة", icon: "🕋" }, { name: "ضريبة", icon: "💰" }, { name: "البتراء", icon: "🏛️" }, 
-            { name: "سكة", icon: "🚂" }, { name: "القاهرة", icon: "🇪🇬" }, { name: "باريس", icon: "🗼" }, { name: "دبي", icon: "🏙️" },
-            { name: "القدس", icon: "🕌" }, { name: "لندن", icon: "🎡" }, { name: "سجن", icon: "⚖️" }, { name: "طوكيو", icon: "🗾" },
-            { name: "خدمات", icon: "⚡" }, { name: "نيويورك", icon: "🗽" }, { name: "سكة", icon: "🚂" }, { name: "روما", icon: "🇮🇹" },
-            { name: "مدريد", icon: "🇪🇸" }, { name: "سور", icon: "🧱" }, { name: "أسطنبول", icon: "🇹🇷" }, { name: "بيروت", icon: "🇱🇧" },
-            { name: "موقف", icon: "🅿️" }, { name: "موسكو", icon: "🇷🇺" }, { name: "سدني", icon: "🇦🇺" }, { name: "برلين", icon: "🇩🇪" },
-            { name: "سكة", icon: "🚂" }, { name: "خدمات", icon: "⚡" }, { name: "بانكوك", icon: "🇹🇭" }, { name: "أهرامات", icon: "🔺" },
-            { name: "عمان", icon: "🇯🇴" }, { name: "أثينا", icon: "🇬🇷" }, { name: "سجن", icon: "🔒" }, { name: "فيينا", icon: "🇦🇹" },
-            { name: "دلهي", icon: "🇮🇳" }, { name: "ضريبة", icon: "💰" }, { name: "سكة", icon: "🚂" }, { name: "سنغافورة", icon: "🇸🇬" },
-            { name: "مراكش", icon: "🇲🇦" }, { name: "الكويت", icon: "🇰🇼" }, { name: "الرياض", icon: "🇸🇦" }, { name: "بغداد", icon: "🇮🇶" }
+        const tiles = [
+            { id: 0, name: "انطلاق", icon: "🚀" }, { id: 1, name: "مكة", icon: "🕋" }, { id: 2, name: "ضريبة", icon: "💰" }, { id: 3, name: "البتراء", icon: "🏛️" }, { id: 4, name: "سكة", icon: "🚂" }, { id: 5, name: "القاهرة", icon: "🇪🇬" }, { id: 6, name: "باريس", icon: "🗼" }, { id: 7, name: "دبي", icon: "🏙️" }, { id: 8, name: "القدس", icon: "🕌" }, { id: 9, name: "لندن", icon: "🎡" },
+            { id: 10, name: "سجن", icon: "⚖️" }, { id: 11, name: "طوكيو", icon: "🗾" }, { id: 12, name: "خدمات", icon: "⚡" }, { id: 13, name: "نيويورك", icon: "🗽" }, { id: 14, name: "سكة", icon: "🚂" }, { id: 15, name: "روما", icon: "🇮🇹" }, { id: 16, name: "مدريد", icon: "🇪🇸" }, { id: 17, name: "سور", icon: "🧱" }, { id: 18, name: "أسطنبول", icon: "🇹🇷" }, { id: 19, name: "بيروت", icon: "🇱🇧" },
+            { id: 20, name: "موقف", icon: "🅿️" }, { id: 21, name: "موسكو", icon: "🇷🇺" }, { id: 22, name: "سدني", icon: "🇦🇺" }, { id: 23, name: "برلين", icon: "🇩🇪" }, { id: 24, name: "سكة", icon: "🚂" }, { id: 25, name: "خدمات", icon: "⚡" }, { id: 26, name: "بانكوك", icon: "🇹🇭" }, { id: 27, name: "أهرامات", icon: "🔺" }, { id: 28, name: "عمان", icon: "🇯🇴" }, { id: 29, name: "أثينا", icon: "🇬🇷" },
+            { id: 30, name: "للسجن", icon: "🔒" }, { id: 31, name: "فيينا", icon: "🇦🇹" }, { id: 32, name: "دلهي", icon: "🇮🇳" }, { id: 33, name: "ضريبة", icon: "💰" }, { id: 34, name: "سكة", icon: "🚂" }, { id: 35, name: "سنغافورة", icon: "🇸🇬" }, { id: 36, name: "مراكش", icon: "🇲🇦" }, { id: 37, name: "الكويت", icon: "🇰🇼" }, { id: 38, name: "الرياض", icon: "🇸🇦" }, { id: 39, name: "بغداد", icon: "🇮🇶" }
         ];
 
         const layout = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 39, -1, -1, -1, -1, -1, -1, -1, -1, -1, 11, 38, -1, -1, -1, -1, -1, -1, -1, -1, -1, 12, 37, -1, -1, -1, -1, -1, -1, -1, -1, -1, 13, 36, -1, -1, -1, -1, -1, -1, -1, -1, -1, 14, 35, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, 34, -1, -1, -1, -1, -1, -1, -1, -1, -1, 16, 33, -1, -1, -1, -1, -1, -1, -1, -1, -1, 17, 32, -1, -1, -1, -1, -1, -1, -1, -1, -1, 18, 31, -1, -1, -1, -1, -1, -1, -1, -1, -1, 19, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20];
@@ -59,14 +50,15 @@
                     if (!board.querySelector('.center-area')) {
                         let center = document.createElement('div');
                         center.className = 'center-area';
-                        center.innerHTML = '<h1 style="font-size:3vw; margin:0;">MONOPOLY</h1><button onclick="movePlayer()">رمي النرد</button>';
+                        center.innerHTML = '<h1 style="font-size:3vw; margin:0;">MONOPOLY</h1><button onclick="movePlayer()">رمي النرد</button><div id="dice-result">0</div>';
                         board.appendChild(center);
                     }
                 } else {
+                    let tile = tiles.find(t => t.id === idx);
                     let div = document.createElement('div');
                     div.className = 'tile';
                     div.id = 'tile-' + idx;
-                    div.innerHTML = `<span style="font-size:1vw;">${tileData[idx].icon}</span><br>${tileData[idx].name}`;
+                    div.innerHTML = `<span style="font-size:1.5vw;">${tile.icon}</span><br>${tile.name}`;
                     board.appendChild(div);
                 }
             });
@@ -78,8 +70,8 @@
             document.getElementById('tile-' + pos).classList.remove('active');
             pos = (pos + roll) % 40;
             document.getElementById('tile-' + pos).classList.add('active');
+            document.getElementById('dice-result').innerText = roll;
         }
-
         initBoard();
     </script>
 </body>
